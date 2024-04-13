@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -13,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'temp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,6 +36,12 @@ return [
             'driver' => 'local',
             'root' => storage_path('app'),
             'throw' => false,
+        ],
+
+        'temp' => [
+            'driver' => 'local',
+            'root' => storage_path('temp'),
+            'throw' => true,
         ],
 
         'public' => [

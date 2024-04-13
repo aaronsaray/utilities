@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Illuminate\Console\Command;
 use Intervention\Image\Interfaces\ImageInterface;
@@ -15,6 +18,8 @@ class MakePodcastImages extends Command
 
     protected $description = 'Makes podcast images into the same directory as the file is from';
 
+    protected Filesystem $podcastDisk;
+
     protected ImageManager $imageManager;
 
     protected ImageInterface $podcastWaveform;
@@ -25,38 +30,38 @@ class MakePodcastImages extends Command
 
         $podcastLocation = $this->ask('Where is the file located?');
 
-        if (!is_readable($podcastLocation)) {
-            throw new RuntimeException('Can not read the file at ' . $podcastLocation);
+        $this->podcastDisk = Storage::build(['driver' => 'local', 'root' => dirname($podcastLocation)]);
+        $podcastFileName = basename($podcastLocation);
+        if (!$this->podcastDisk->exists($podcastFileName)) {
+            throw new RuntimeException("The podcast image '$podcastFileName' can not be found.");
         }
 
-        $this->createPodcastWaveform($podcastLocation);
+        $this->createPodcastWaveform($podcastFileName);
 
-        $this->youtube($podcastLocation);
+        $this->youtube();
 
         $this->info('Success!');
 
         return static::SUCCESS;
     }
 
-    protected function createPodcastWaveform(string $podcastLocation): void
+    protected function createPodcastWaveform(string $podcastFileName): void
     {
-        // you can do it here -
+        $fullPodcastPath = $this->podcastDisk->path($podcastFileName);
 
-        $this->podcastWaveform = $this->imageManager->create(400, 200);
+        Process::path(Storage::disk('temp')->path(''))
+            ->run("ffmpeg -i {$fullPodcastPath} -filter_complex showwavespic=split_channels=0:scale=lin:filter=peak:colors=white -frames:v 1 waveform.png")
+            ->throw();
+
+        $this->podcastWaveform = $this->imageManager->read(Storage::disk('temp')->path('waveform.png'));
     }
 
-    protected function youtube(string $podcastLocation): void
+    protected function youtube(): void
     {
-        $youtubeThumbnailLocation = dirname($podcastLocation) . '/youtube.jpg';
+        $youtubeThumbnailLocation = $this->podcastDisk->path('youtube-thumbnail.jpg');
 
-        if (!is_writable(dirname($youtubeThumbnailLocation))) {
-            throw new RuntimeException('Can not write to ' . $youtubeThumbnailLocation);
-        }
-
-        $imageManager = ImageManager::gd();
-
-        $image = $imageManager->read(resource_path('templates/youtube-thumbnail.jpg'));
-
+        $image = $this->imageManager->read(resource_path('templates/youtube-thumbnail.jpg'));
+        $image->place($this->podcastWaveform, 'bottom-left', 100, 65, 75);
         $image->save($youtubeThumbnailLocation);
 
         $this->line("Wrote {$youtubeThumbnailLocation}");
