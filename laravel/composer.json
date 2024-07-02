@@ -1,16 +1,17 @@
 {
-    "name": "laravel/laravel",
+    "name": "aaronsaray/utilities",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Utilities",
     "license": "MIT",
     "require": {
         "php": "^8.2",
         "intervention/image": "^3.5",
         "laravel/framework": "^11.0",
+        "laravel/prompts": "^0.1.24",
         "laravel/tinker": "^2.9"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",

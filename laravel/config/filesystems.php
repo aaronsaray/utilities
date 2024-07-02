@@ -44,6 +44,12 @@ return [
             'throw' => true,
         ],
 
+        'podcast' => [
+            'driver' => 'local',
+            'root' => storage_path('podcast'),
+            'throw' => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
