@@ -134,13 +134,14 @@ class PreparePodcast extends Command
         $youtubeVideoFileName = sprintf('%s.youtube-video.mp4', $this->mp3BaseName);
         $imagePath = resource_path('templates/youtube-thumbnail.jpg');
         $fontPath = resource_path('templates/SpaceGrotesk-Light.ttf');
+        $escapedTitle = addcslashes($this->podcastTitle, "':\\");
 
         spin(fn() => Process::path(Storage::disk('temp')->path(''))
             ->run(sprintf(
                 'ffmpeg -i %s -i %s -filter_complex "[0:a]showwaves=mode=p2p:s=620x160:scale=sqrt:n=2:colors=0xeeeeff[fg];[1:v]scale=1280:720[bg];[bg][fg]overlay=x=100:y=450,drawtext=text=\'%s\':fontsize=32:fontcolor=white:fontfile=%s:x=100:y=400[outv]" -map "[outv]" -map 0:a -pix_fmt yuv420p %s',
                 escapeshellarg($this->selectedMp3FullPath),
                 $imagePath,
-                $this->podcastTitle,
+                $escapedTitle,
                 $fontPath,
                 escapeshellarg($youtubeVideoFileName),
                 ))
