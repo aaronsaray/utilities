@@ -4,7 +4,7 @@
     "description": "Utilities",
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "intervention/image": "^3.5",
         "laravel/framework": "^11.0",
         "laravel/prompts": "^0.1.24",
